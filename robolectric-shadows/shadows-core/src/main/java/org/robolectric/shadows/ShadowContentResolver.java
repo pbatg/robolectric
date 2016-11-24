@@ -70,7 +70,7 @@ public class ShadowContentResolver {
   private static boolean masterSyncAutomatically;
 
   @Resetter
-  public static void reset() {
+  synchronized public static void reset() {
     syncableAccounts.clear();
     providers.clear();
     masterSyncAutomatically = false;
@@ -161,8 +161,7 @@ public class ShadowContentResolver {
         return null;
       }
 
-      returnCursor.setQuery(uri, projection, selection, selectionArgs,
-          sortOrder);
+      returnCursor.setQuery(uri, projection, selection, selectionArgs, sortOrder);
       return returnCursor;
     }
   }
@@ -170,7 +169,18 @@ public class ShadowContentResolver {
   @Implementation
   public Cursor query(Uri uri, String[] projection, String selection,
       String[] selectionArgs, String sortOrder, CancellationSignal cancellationSignal) {
-    return query(uri, projection, selection, selectionArgs, sortOrder);
+    ContentProvider provider = getProvider(uri);
+    if (provider != null) {
+      return provider.query(uri, projection, selection, selectionArgs, sortOrder, cancellationSignal);
+    } else {
+      BaseCursor returnCursor = getCursor(uri);
+      if (returnCursor == null) {
+        return null;
+      }
+
+      returnCursor.setQuery(uri, projection, selection, selectionArgs, sortOrder);
+      return returnCursor;
+    }
   }
 
   @Implementation
@@ -424,7 +434,7 @@ public class ShadowContentResolver {
     return getProvider(uri.getAuthority());
   }
 
-  private static ContentProvider getProvider(String authority) {
+  synchronized private static ContentProvider getProvider(String authority) {
     if (!providers.containsKey(authority)) {
       AndroidManifest manifest = shadowOf(RuntimeEnvironment.application).getAppManifest();
       if (manifest != null) {
@@ -441,12 +451,12 @@ public class ShadowContentResolver {
   /**
    * @deprecated Use {@link org.robolectric.Robolectric#buildContentProvider(Class)} instead.
    */
-  public static void registerProvider(String authority, ContentProvider provider) {
+  synchronized public static void registerProvider(String authority, ContentProvider provider) {
     initialize(provider, authority);
     providers.put(authority, provider);
   }
 
-  public static void registerProviderInternal(String authority, ContentProvider provider) {
+  synchronized public static void registerProviderInternal(String authority, ContentProvider provider) {
     providers.put(authority, provider);
   }
 

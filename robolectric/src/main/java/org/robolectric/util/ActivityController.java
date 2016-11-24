@@ -310,6 +310,8 @@ public class ActivityController<T extends Activity> extends ComponentController<
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onStart");
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity,
               "onRestoreInstanceState", from(Bundle.class, outState));
+          ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity,
+              "onPostCreate", from(Bundle.class, outState));
           ReflectionHelpers.callInstanceMethod(Activity.class, recreatedActivity, "onResume");
         }
       });
