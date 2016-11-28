@@ -823,4 +823,8 @@ public class XmlResourceParserImpl implements XmlResourceParser {
     }
     return false;
   }
+
+  public ResourceLoader getResourceLoader() {
+    return resourceLoader;
+  }
 }

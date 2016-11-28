@@ -1,16 +1,8 @@
 package org.robolectric.shadows;
 
 import android.app.Activity;
-import android.content.res.ColorStateList;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.NinePatchDrawable;
+import android.content.res.*;
+import android.graphics.drawable.*;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -20,18 +12,9 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
-import org.robolectric.TestRunners;
+import org.robolectric.*;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.AttrData;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResType;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.TypedResource;
+import org.robolectric.res.*;
 import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.TestUtil;
@@ -39,7 +22,6 @@ import org.xmlpull.v1.XmlPullParser;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.Map;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -507,6 +489,16 @@ public class ShadowResourcesTest {
   }
 
   @Test
+  public void obtainStyledAttributes_shouldUseIdFrom() throws Exception {
+    ResourceLoader fakeResourceLoader = new FakeResourceLoader(
+        new ResourceExtractor(new ResourcePath(Lollipop_R_snippet.class, "android", null, null)));
+    AttributeSet attributeSet = Robolectric.buildAttributeSet(fakeResourceLoader)
+        .addAttribute(android.R.attr.id, "@android:id/list_container").build();
+    TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[]{android.R.attr.id});
+    assertThat(typedArray.getResourceId(0, -1)).isEqualTo(Lollipop_R_snippet.id.list_container);
+  }
+
+  @Test
   public void obtainStyledAttributesShouldDereferenceValues() {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.MyBlackTheme, false);
@@ -520,8 +512,10 @@ public class ShadowResourcesTest {
 
   public static final class Lollipop_R_snippet {
     public static final class attr {
-      public static final int viewportHeight = 16843779;
-      public static final int viewportWidth = 16843778;
+      public static final int id = android.R.attr.id;
+    }
+    public static final class id {
+      public static final int list_container = 1234567890;
     }
   }
 
@@ -734,17 +728,15 @@ public class ShadowResourcesTest {
   }
 
   private static class FakeResourceLoader extends ResourceLoader {
-    private final Map<String, AttrData> attributesTypes;
     private final ResourceIndex resourceIndex;
 
-    public FakeResourceLoader(Map<String, AttrData> attributesTypes, ResourceIndex resourceIndex) {
-      this.attributesTypes = attributesTypes;
+    public FakeResourceLoader(ResourceIndex resourceIndex) {
       this.resourceIndex = resourceIndex;
     }
 
     @Override
     public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
-      return new TypedResource<>(attributesTypes.get(resName.name), ResType.FLOAT);
+      return null;
     }
 
     @Override

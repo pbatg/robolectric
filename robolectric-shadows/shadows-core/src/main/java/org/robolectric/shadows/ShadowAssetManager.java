@@ -32,6 +32,7 @@ import org.robolectric.res.ThemeStyleSet;
 import org.robolectric.res.TypedResource;
 import org.robolectric.res.builder.ResourceParser;
 import org.robolectric.res.builder.XmlBlock;
+import org.robolectric.res.builder.XmlResourceParserImpl;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -391,6 +392,9 @@ public final class ShadowAssetManager {
     String resourceTypeName = getResourceTypeName(resId);
     if (value == null && DrawableResourceLoader.isStillHandledHere(resourceTypeName)) {
       FileTypedResource typedResource = (FileTypedResource) resourceLoader.getValue(resId, qualifiers);
+      if (typedResource == null) {
+        throw new IllegalStateException("Resource: " + resId + " of type " + resourceTypeName + " not found");
+      }
       return new TypedResource<>(typedResource.getFsFile(), ResType.FILE);
     }
 
@@ -414,6 +418,11 @@ public final class ShadowAssetManager {
    */
   private ResourceLoader getResourceLoader(ResName resName) {
     return "android".equals(resName.packageName) ? shadowOf(AssetManager.getSystem()).getResourceLoader() : this.resourceLoader;
+  }
+
+  private ResourceLoader getResourceLoader(AttributeResource attributeResource) {
+    ResourceLoader resourceLoader = attributeResource.getResourceLoader();
+    return resourceLoader != null ? resourceLoader : getResourceLoader(attributeResource.resName);
   }
 
   TypedResource resolve(TypedResource value, String qualifiers, int resId) {
@@ -574,7 +583,7 @@ public final class ShadowAssetManager {
       AttributeResource attribute = buildAttribute(set, attrs[i], defStyleAttr, themeStyleSet, defStyleRes);
       if (attribute != null && !attribute.isNull()) {
         TypedValue typedValue = new TypedValue();
-        ResourceLoader resourceLoader = getResourceLoader(attribute.resName);
+        ResourceLoader resourceLoader = getResourceLoader(attribute);
         Converter.convertAndFill(attribute, typedValue, resourceLoader, RuntimeEnvironment.getQualifiers(), true);
         //noinspection PointlessArithmeticExpression
         data[offset + ShadowAssetManager.STYLE_TYPE] = typedValue.type;
@@ -611,7 +620,11 @@ public final class ShadowAssetManager {
             // assume the user knows what they're doing with it.
             resName = ResName.qualifyResName(attributeSet.getAttributeName(i), null, "attr");
           }
-          return new AttributeResource(resName, attributeSet.getAttributeValue(i), "fixme!!!");
+          if (attributeSet instanceof XmlResourceParserImpl) {
+            return new AttributeResource(resName, attributeSet.getAttributeValue(i), "fixme!!!", ((XmlResourceParserImpl) attributeSet).getResourceLoader());
+          } else {
+            return new AttributeResource(resName, attributeSet.getAttributeValue(i), "fixme!!!");
+          }
         }
       }
     }

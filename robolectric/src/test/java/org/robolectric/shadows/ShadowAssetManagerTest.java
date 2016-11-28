@@ -204,6 +204,18 @@ public class ShadowAssetManagerTest {
   }
 
   @Test
+  public void getResourceIdentifier_ids() throws Exception {
+    assertThat(shadowOf(assetManager).getResourceIdentifier("idInRClassAndXml", "id", "org.robolectric"))
+        .isEqualTo(R.id.idInRClassAndXml);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("id/idInRClassAndXml", null, "org.robolectric"))
+        .isEqualTo(R.id.idInRClassAndXml);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:idInRClassAndXml", "id", null))
+        .isEqualTo(R.id.idInRClassAndXml);
+    assertThat(shadowOf(assetManager).getResourceIdentifier("org.robolectric:id/idInRClassAndXml", "other", "other"))
+        .isEqualTo(R.id.idInRClassAndXml);
+  }
+
+  @Test
   public void getResourceIdentifier_shouldReturnValueFromRClass() throws Exception {
     assertThat(shadowOf(assetManager).getResourceIdentifier("idInRClassAndXml", "id", "org.robolectric"))
         .isEqualTo(R.id.idInRClassAndXml);

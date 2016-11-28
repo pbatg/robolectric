@@ -36,20 +36,31 @@ public class Converter<T> {
     while (attribute.isResourceReference()) {
       ResName resName = attribute.getResourceReference();
 
-      // TODO: Refactor this to a ResourceLoaderChooser
+      Integer resourceId = attribute.getReferredId();
+//      // TODO: Refactor this to a ResourceLoaderChooser
+//      ResourceLoader attributeResourceLoader = attribute.getResourceLoader();
+//      if (attributeResourceLoader == null) {
+////        attributeResourceLoader = resourceLoader;
+//        if ("android".equals(resName.packageName)) {
+//          attributeResourceLoader = RuntimeEnvironment.getSystemResourceLoader();
+//        } else {
+//          attributeResourceLoader = RuntimeEnvironment.getAppResourceLoader();
+//        }
+//      }
+//
+//      Integer resourceId = attributeResourceLoader.getResourceIndex().getResourceId(resName);
+      if (resourceId == null) {
+        throw new Resources.NotFoundException("unknown resource " + resName);
+      }
+      outValue.type = TypedValue.TYPE_REFERENCE;
+      outValue.resourceId = resourceId;
+
       ResourceLoader myResourceLoader;
       if ("android".equals(resName.packageName)) {
         myResourceLoader = RuntimeEnvironment.getSystemResourceLoader();
       } else {
         myResourceLoader = RuntimeEnvironment.getAppResourceLoader();
       }
-
-      Integer resourceId = myResourceLoader.getResourceIndex().getResourceId(resName);
-      if (resourceId == null) {
-        throw new Resources.NotFoundException("unknown resource " + resName);
-      }
-      outValue.type = TypedValue.TYPE_REFERENCE;
-      outValue.resourceId = resourceId;
 
       TypedResource dereferencedRef = myResourceLoader.getValue(resName, qualifiers);
 

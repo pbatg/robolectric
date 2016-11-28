@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.view.View;
+import org.jetbrains.annotations.NotNull;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
@@ -115,6 +116,12 @@ public class Robolectric {
    * the need for creating XML snippets.
    */
   public static AttributeSetBuilder buildAttributeSet() {
+    ResourceLoader resourceLoader = RuntimeEnvironment.getAppResourceLoader();
+    return buildAttributeSet(resourceLoader);
+  }
+
+  @NotNull
+  public static AttributeSetBuilder buildAttributeSet(ResourceLoader resourceLoader) {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setNamespaceAware(true);
     factory.setIgnoringComments(true);
@@ -128,7 +135,7 @@ public class Robolectric {
     } catch (ParserConfigurationException e) {
       throw new RuntimeException(e);
     }
-    return new AttributeSetBuilder(document, RuntimeEnvironment.getAppResourceLoader());
+    return new AttributeSetBuilder(document, resourceLoader);
   }
 
   public static class AttributeSetBuilder {
