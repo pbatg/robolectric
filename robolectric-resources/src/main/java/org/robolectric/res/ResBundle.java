@@ -7,27 +7,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ResBundle<T> {
-
-
-  private final ResMap<T> valuesMap = new ResMap<>();
-  private final ResMap<List<T>> valuesArrayMap = new ResMap<>();
+public class ResBundle {
+  private final ResMap<TypedResource> valuesMap = new ResMap<>();
   private String overrideNamespace;
 
-  public void put(String attrType, String name, T value, XmlLoader.XmlContext xmlContext) {
+  public void put(String attrType, String name, TypedResource value) {
+    XmlLoader.XmlContext xmlContext = value.getXmlContext();
     ResName resName = new ResName(maybeOverride(xmlContext.packageName), attrType, name);
-    List<Value<T>> values = valuesMap.find(resName);
+    List<Value<TypedResource>> values = valuesMap.find(resName);
     values.add(new Value<>(xmlContext.getQualifiers(), value));
     Collections.sort(values);
   }
 
-  public T get(ResName resName, String qualifiers) {
-    Value<T> value = getValue(resName, qualifiers);
+  public TypedResource get(ResName resName, String qualifiers) {
+    Value<TypedResource> value = getValue(resName, qualifiers);
     return value == null ? null : value.value;
   }
 
-  public Value<T> getValue(ResName resName, String qualifiers) {
-    List<Value<T>> values = valuesMap.find(maybeOverride(resName));
+  public Value<TypedResource> getValue(ResName resName, String qualifiers) {
+    List<Value<TypedResource>> values = valuesMap.find(maybeOverride(resName));
     return values != null ? pick(values, qualifiers) : null;
   }
 
@@ -79,12 +77,11 @@ public class ResBundle<T> {
   }
 
   public int size() {
-    return valuesMap.size() + valuesArrayMap.size();
+    return valuesMap.size();
   }
 
   public void makeImmutable() {
     valuesMap.makeImmutable();
-    valuesArrayMap.makeImmutable();
   }
 
   public void overrideNamespace(String overrideNamespace) {
@@ -100,18 +97,17 @@ public class ResBundle<T> {
     return overrideNamespace == null ? resName : new ResName(overrideNamespace, resName.type, resName.name);
   }
 
-  public void mergeLibraryStyle(ResBundle<T> fromResBundle, String packageName) {
+  public void mergeLibraryStyle(ResBundle fromResBundle, String packageName) {
     valuesMap.merge(packageName, fromResBundle.valuesMap);
-    valuesArrayMap.merge(packageName, fromResBundle.valuesArrayMap);
   }
 
   public void receive(ResourceLoader.Visitor visitor) {
-    for (final Map.Entry<ResName, List<Value<T>>> entry : valuesMap.map.entrySet()) {
-      visitor.visit(entry.getKey(), new AbstractList<T>() {
-        List<Value<T>> value;
+    for (final Map.Entry<ResName, List<Value<TypedResource>>> entry : valuesMap.map.entrySet()) {
+      visitor.visit(entry.getKey(), new AbstractList<TypedResource>() {
+        List<Value<TypedResource>> value;
 
         @Override
-        public T get(int index) {
+        public TypedResource get(int index) {
           if (value == null) value = entry.getValue();
           return value.get(index).getValue();
         }

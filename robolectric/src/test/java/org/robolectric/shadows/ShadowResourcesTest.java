@@ -724,7 +724,7 @@ public class ShadowResourcesTest {
 
     @Override
     public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
-      return new TypedResource<>(attributesTypes.get(resName.name), ResType.FLOAT);
+      return new TypedResource<>(attributesTypes.get(resName.name), ResType.FLOAT, null);
     }
 
     @Override

@@ -9,8 +9,8 @@ import java.io.InputStream;
 // TODO: Give me a better name
 abstract class XResourceLoader extends ResourceLoader {
   final ResBunch data = new ResBunch();
-  final ResBundle<XmlBlock> xmlDocuments = new ResBundle<>();
-  final ResBundle<FsFile> rawResources = new ResBundle<>();
+  final ResBundle xmlDocuments = new ResBundle();
+  final ResBundle rawResources = new ResBundle();
   
   private final ResourceIndex resourceIndex;
   private boolean isInitialized = false;
@@ -45,14 +45,14 @@ abstract class XResourceLoader extends ResourceLoader {
   @Override
   public XmlBlock getXml(ResName resName, String qualifiers) {
     initialize();
-    return xmlDocuments.get(resName, qualifiers);
+    return (XmlBlock) xmlDocuments.get(resName, qualifiers).getData();
   }
 
   @Override
   public InputStream getRawValue(ResName resName) {
     initialize();
 
-    FsFile file = rawResources.get(resName, "");
+    FsFile file = (FsFile) rawResources.get(resName, "").getData();
     try {
       return file == null ? null : file.getInputStream();
     } catch (IOException e) {

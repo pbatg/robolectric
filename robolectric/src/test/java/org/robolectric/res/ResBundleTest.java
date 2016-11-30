@@ -168,6 +168,6 @@ public class ResBundleTest {
   }
 
   private static TypedResource<String> createStringTypedResource() {
-    return new TypedResource<>("title from resourceLoader1", ResType.CHAR_SEQUENCE);
+    return new TypedResource<>("title from resourceLoader1", ResType.CHAR_SEQUENCE, null);
   }
 }
