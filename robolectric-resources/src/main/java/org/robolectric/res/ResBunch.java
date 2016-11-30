@@ -22,13 +22,8 @@ public class ResBunch {
   }
 
   public TypedResource get(@NotNull ResName resName, String qualifiers) {
-    ResBundle.Value<TypedResource> value = getValue(resName, qualifiers);
-    return value == null ? null : value.getValue();
-  }
-
-  public ResBundle.Value<TypedResource> getValue(@NotNull ResName resName, String qualifiers) {
     ResBundle bundle = getBundle(resName.type);
-    return bundle.getValue(resName, qualifiers);
+    return bundle.get(resName, qualifiers);
   }
 
   public int size() {

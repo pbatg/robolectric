@@ -38,21 +38,22 @@ abstract class XResourceLoader extends ResourceLoader {
 
   public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
     initialize();
-    ResBundle.Value<TypedResource> value = data.getValue(resName, qualifiers);
-    return value == null ? null : value.getValue();
+    return data.get(resName, qualifiers);
   }
 
   @Override
   public XmlBlock getXml(ResName resName, String qualifiers) {
     initialize();
-    return (XmlBlock) xmlDocuments.get(resName, qualifiers).getData();
+    TypedResource typedResource = xmlDocuments.get(resName, qualifiers);
+    return typedResource == null ? null : (XmlBlock) typedResource.getData();
   }
 
   @Override
   public InputStream getRawValue(ResName resName) {
     initialize();
 
-    FsFile file = (FsFile) rawResources.get(resName, "").getData();
+    TypedResource typedResource = rawResources.get(resName, "");
+    FsFile file = typedResource == null ? null : (FsFile) typedResource.getData();
     try {
       return file == null ? null : file.getInputStream();
     } catch (IOException e) {
